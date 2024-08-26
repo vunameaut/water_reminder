@@ -1,0 +1,104 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/login"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/edit_text_login">
+
+    <!-- Hình ảnh giọt nước -->
+    <ImageView
+        android:id="@+id/water_drop_image"
+        android:layout_width="match_parent"
+        android:layout_height="341dp"
+        android:layout_alignParentTop="true"
+        app:srcCompat="@drawable/image" />
+
+    <!-- Trường nhập Username -->
+    <EditText
+        android:id="@+id/input_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/water_drop_image"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/edit_text_login"
+        android:drawableLeft="@drawable/ic_user"
+        android:drawablePadding="10dp"
+        android:hint="Username..."
+        android:padding="15dp"
+        android:textColor="#230707"
+        android:textSize="20sp" />
+
+    <!-- Container cho Password và biểu tượng mắt -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/input_username"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="30dp">
+
+        <EditText
+            android:id="@+id/input_pass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/edit_text_login"
+            android:drawableLeft="@drawable/ic_password"
+            android:drawablePadding="10dp"
+            android:hint="Password..."
+            android:inputType="textPassword"
+            android:padding="15dp"
+            android:textColor="#230707"
+            android:textSize="20sp"
+            android:layout_toStartOf="@+id/toggle_password_visibility"/>
+
+        <ImageButton
+            android:id="@+id/toggle_password_visibility"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/transparent"
+            android:padding="10dp"
+            app:srcCompat="@drawable/ic_visibility_off"
+            android:contentDescription="Toggle password visibility" />
+
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"></LinearLayout>
+
+    <Button
+        android:id="@+id/sign_in_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="570dp"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/btn_login"
+        android:text="Sign in"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/forgot_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sign_in_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Forgot your password?"
+        android:textColor="#673AB7"
+        android:textSize="23sp" />
+
+
+
+</RelativeLayout>
