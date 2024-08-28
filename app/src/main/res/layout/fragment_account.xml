@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp"
     android:orientation="vertical"
     android:background="#FBFBFB"
@@ -18,7 +17,7 @@
         android:layout_marginBottom="16dp"
         android:scaleType="centerCrop"
         android:src="@drawable/default_avatar"
-        app:shapeAppearanceOverlay="@style/CircleImageView" />
+        android:background="@drawable/circle_background"/>
 
     <!-- Tiêu đề -->
     <TextView
@@ -32,6 +31,7 @@
 
     <!-- Thông tin tài khoản -->
     <TextView
+        android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Name: John Doe"
@@ -40,6 +40,7 @@
         android:layout_marginBottom="8dp"/>
 
     <TextView
+        android:id="@+id/emailTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Email: johndoe@example.com"
@@ -48,6 +49,7 @@
         android:layout_marginBottom="8dp"/>
 
     <TextView
+        android:id="@+id/phoneTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Phone: +1234567890"

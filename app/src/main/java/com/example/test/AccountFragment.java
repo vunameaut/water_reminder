@@ -2,46 +2,61 @@ package com.example.test;
 
 import static android.app.Activity.RESULT_OK;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
-// ... (other necessary imports)
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 public class AccountFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
 
     private ImageView avatarImageView;
+    private TextView nameTextView, emailTextView, phoneTextView;
     private FirebaseStorage storage;
     private StorageReference storageRef;
+    private DatabaseReference databaseRef;
 
-    private Uri selectedImageUri; // To store the selected image URI
+    private Uri selectedImageUri;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
         avatarImageView = view.findViewById(R.id.avatarImageView);
+        nameTextView = view.findViewById(R.id.nameTextView);
+        emailTextView = view.findViewById(R.id.emailTextView);
+        phoneTextView = view.findViewById(R.id.phoneTextView);
+
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
+        databaseRef = FirebaseDatabase.getInstance().getReference("users");
 
-        // Set click listener on avatarImageView
+        // Đặt OnClickListener cho avatarImageView để mở trình chọn ảnh
         avatarImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,8 +64,10 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        // Load avatar image from Firebase Storage
+        // Tải ảnh đại diện từ Firebase Storage
         loadAvatarImage();
+        // Tải thông tin người dùng từ Firebase Realtime Database
+        loadUserInfo();
 
         return view;
     }
@@ -67,66 +84,101 @@ public class AccountFragment extends Fragment {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
 
-            // Display the selected image in the ImageView (you can use Picasso here too)
+            // Hiển thị ảnh đã chọn lên ImageView sử dụng Picasso
             Picasso.get().load(selectedImageUri).into(avatarImageView);
 
-            // Upload the image to Firebase Storage
+            // Tải ảnh lên Firebase Storage
             uploadAvatarImage(selectedImageUri);
         }
     }
 
-
-        // ... (các biến và phương thức khác)
-
-        private void loadAvatarImage() {
-            StorageReference avatarRef = storageRef.child("avatar/" + getCurrentUserId() + ".jpg"); // Điều chỉnh tên tệp nếu cần
+    private void loadAvatarImage() {
+        String userId = getUserId();
+        if (userId != null) {
+            StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
 
             avatarRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {
-                    // Tải ảnh vào ImageView sử dụng Picasso
+                    // Tải ảnh đại diện vào ImageView sử dụng Picasso
                     Picasso.get().load(uri).into(avatarImageView);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Xử lý lỗi (ví dụ: không tìm thấy ảnh)
-                    // Bạn có thể hiển thị ảnh đại diện mặc định hoặc thông báo lỗi
-                    Toast.makeText(getContext(), "Không thể tải ảnh đại diện", Toast.LENGTH_SHORT).show();
+                    // Xử lý lỗi (ví dụ: ảnh không tồn tại)
+                    Toast.makeText(getContext(), "Không thể tải ảnh đại diện: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
+    }
 
-        private void uploadAvatarImage(Uri imageUri) {
-            StorageReference avatarRef = storageRef.child("avatars/" + getCurrentUserId() + ".jpg");
+    private void uploadAvatarImage(Uri imageUri) {
+        String userId = getUserId();
+        if (userId != null) {
+            StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
 
             avatarRef.putFile(imageUri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            // Tải ảnh lên thành công
+                            // Ảnh đã được tải lên thành công
                             Toast.makeText(getContext(), "Đã tải lên ảnh đại diện", Toast.LENGTH_SHORT).show();
 
-                            // Bạn có thể tải lại ảnh đại diện ở đây để cập nhật thay đổi ngay lập tức
+                            // Tải lại ảnh đại diện để hiển thị ngay lập tức
                             loadAvatarImage();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            // Xử lý lỗi khi tải lên không thành công
+                            // Xử lý lỗi khi tải lên thất bại
                             Toast.makeText(getContext(), "Tải lên ảnh đại diện thất bại", Toast.LENGTH_SHORT).show();
                         }
                     });
         }
+    }
 
-        // ... (Triển khai phương thức getCurrentUserId())
+    private void loadUserInfo() {
+        String userId = getUserId();
+        if (userId != null) {
+            DatabaseReference userRef = databaseRef.child(userId);
 
-        private String getCurrentUserId() {
-            // Thay thế bằng logic thực tế của bạn để lấy ID của người dùng hiện tại
-            // Điều này có thể liên quan đến việc sử dụng Firebase Authentication hoặc các hệ thống quản lý người dùng khác
-            // Hiện tại, giả sử một placeholder đơn giản
-            return "user123";
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        String username = dataSnapshot.child("username").getValue(String.class);
+                        String email = dataSnapshot.child("email").getValue(String.class);
+                        Long phoneLong = dataSnapshot.child("phone").getValue(Long.class);
+                        String phone = (phoneLong != null) ? String.valueOf(phoneLong) : "";
+
+                        // Hiển thị thông tin lên các TextView
+                        nameTextView.setText("Name: " + username);
+                        emailTextView.setText("Email: " + email);
+                        phoneTextView.setText("Phone: " + phone);
+                    } else {
+                        // Xử lý trường hợp không tìm thấy thông tin người dùng
+                        Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    // Xử lý lỗi khi đọc dữ liệu từ Realtime Database
+                    Toast.makeText(getContext(), "Lỗi khi đọc dữ liệu: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+    }
 
+    private String getUserId() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            return user.getUid();
+        } else {
+
+            return null;
+        }
+    }
 }

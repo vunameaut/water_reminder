@@ -33,7 +33,7 @@
 
         <!-- Add TextViews at the top -->
         <TextView
-            android:id="@+id/hello"
+            android:id="@+id/hi_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
@@ -47,7 +47,7 @@
             android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/hello"
+            android:layout_below="@id/hi_name"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="8dp"
             android:text="Today, 19 August"
@@ -101,20 +101,24 @@
         </FrameLayout>
 
         <!-- Buttons for Water Intake -->
+
+        <!-- Navigation Buttons -->
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/linearLayout2"
-            android:layout_centerHorizontal="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginTop="20dp"
+            android:layout_marginEnd="89dp"
+            android:layout_marginBottom="75dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btn_small"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="20dp"
                 android:background="@drawable/cup_button"
                 android:text="500 ml" />
 
@@ -127,7 +131,6 @@
                 android:text="1000 ml" />
         </LinearLayout>
 
-        <!-- Navigation Buttons -->
         <LinearLayout
             android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
