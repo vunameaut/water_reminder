@@ -150,13 +150,12 @@ public class AccountFragment extends Fragment {
                     if (dataSnapshot.exists()) {
                         String username = dataSnapshot.child("username").getValue(String.class);
                         String email = dataSnapshot.child("email").getValue(String.class);
-                        Long phoneLong = dataSnapshot.child("phone").getValue(Long.class);
-                        String phone = (phoneLong != null) ? String.valueOf(phoneLong) : "";
+                        String phone = dataSnapshot.child("phone").getValue(String.class);
 
                         // Hiển thị thông tin lên các TextView
                         nameTextView.setText("Name: " + username);
                         emailTextView.setText("Email: " + email);
-                        phoneTextView.setText("Phone: " + phone);
+                        phoneTextView.setText("Phone: " + (phone != null ? phone : ""));
                     } else {
                         // Xử lý trường hợp không tìm thấy thông tin người dùng
                         Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
@@ -171,6 +170,8 @@ public class AccountFragment extends Fragment {
             });
         }
     }
+
+
 
     private String getUserId() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

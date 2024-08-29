@@ -102,7 +102,7 @@ public class signup extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
                             User userProfile = new User(user.getUid(), username, email,"");
-                            mDatabase.child("users").child(username).setValue(userProfile)
+                            mDatabase.child("users").child(user.getUid()).setValue(userProfile)
                                     .addOnCompleteListener(databaseTask -> {
                                         if (databaseTask.isSuccessful()) {
                                             // Gửi email xác thực
@@ -127,6 +127,7 @@ public class signup extends AppCompatActivity {
                     }
                 });
     }
+
 
     public static class User {
         public String uid;
