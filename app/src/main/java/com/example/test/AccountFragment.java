@@ -2,6 +2,22 @@ package com.example.test;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,21 +32,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 public class AccountFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -40,6 +41,9 @@ public class AccountFragment extends Fragment {
     private FirebaseStorage storage;
     private StorageReference storageRef;
     private DatabaseReference databaseRef;
+    private FirebaseAuth mAuth;
+
+    private Button edit_user, btn_log_out;
 
     private Uri selectedImageUri;
 
@@ -52,6 +56,9 @@ public class AccountFragment extends Fragment {
         emailTextView = view.findViewById(R.id.emailTextView);
         phoneTextView = view.findViewById(R.id.phoneTextView);
 
+        btn_log_out = view.findViewById(R.id.btnSignOut);
+
+        mAuth = FirebaseAuth.getInstance();
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
         databaseRef = FirebaseDatabase.getInstance().getReference("users");
@@ -61,6 +68,14 @@ public class AccountFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 openImagePicker();
+            }
+        });
+
+        // Đặt OnClickListener cho nút đăng xuất
+        btn_log_out.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signOut();
             }
         });
 
@@ -100,8 +115,11 @@ public class AccountFragment extends Fragment {
             avatarRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {
-                    // Tải ảnh đại diện vào ImageView sử dụng Picasso
-                    Picasso.get().load(uri).into(avatarImageView);
+                    // Tải ảnh đại diện vào ImageView sử dụng Picasso với CircleTransform
+                    Picasso.get()
+                            .load(uri)
+                            .transform(new CircleTransform()) // Áp dụng transform hình tròn
+                            .into(avatarImageView);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -171,15 +189,25 @@ public class AccountFragment extends Fragment {
         }
     }
 
-
-
     private String getUserId() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             return user.getUid();
         } else {
-
             return null;
         }
+    }
+
+    private void signOut() {
+        mAuth.signOut(); // Đăng xuất người dùng
+
+        // Hiển thị thông báo
+        Toast.makeText(getContext(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+
+        // Chuyển về màn hình đăng nhập hoặc khởi động lại Activity
+        Intent intent = new Intent(getActivity(), login.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        getActivity().finish();
     }
 }

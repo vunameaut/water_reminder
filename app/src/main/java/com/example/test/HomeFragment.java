@@ -50,14 +50,15 @@ public class HomeFragment extends Fragment {
         btnSmall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addWater(500); // 500 ml
+                addWater(500);
             }
         });
 
         btnLarge.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addWater(1000);
+
+                addWater( 1000) ;
             }
         });
 
