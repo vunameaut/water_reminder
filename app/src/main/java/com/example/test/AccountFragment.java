@@ -3,6 +3,7 @@ package com.example.test;
 import static android.app.Activity.RESULT_OK;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -71,14 +72,12 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        // Đặt OnClickListener cho nút đăng xuất
         btn_log_out.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signOut();
             }
         });
-
         // Tải ảnh đại diện từ Firebase Storage
         loadAvatarImage();
         // Tải thông tin người dùng từ Firebase Realtime Database
@@ -199,6 +198,12 @@ public class AccountFragment extends Fragment {
     }
 
     private void signOut() {
+        // Xóa thông tin đăng nhập khỏi SharedPreferences
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LoginPrefs", getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear(); // Xóa tất cả dữ liệu
+        editor.apply();
+
         mAuth.signOut(); // Đăng xuất người dùng
 
         // Hiển thị thông báo
@@ -210,4 +215,5 @@ public class AccountFragment extends Fragment {
         startActivity(intent);
         getActivity().finish();
     }
+
 }
