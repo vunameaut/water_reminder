@@ -17,7 +17,6 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -85,7 +84,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         if (!uid.equals("default_uid")) {
             DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-            database.child("users").child(uid).child("reminder_history").child(alarmId)
+            database.child("users").child(uid).child("alarmHistory").child(alarmId)
                     .removeValue()
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(context, "Báo thức đã được xóa sau khi kích hoạt.", Toast.LENGTH_SHORT).show();
