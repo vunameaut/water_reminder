@@ -407,28 +407,20 @@ public class SetDrinkingTimeFragment extends Fragment {
             remindersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    Calendar now = Calendar.getInstance();
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Reminder reminder = snapshot.getValue(Reminder.class);
 
                         if (reminder != null) {
-                            Calendar reminderTime = Calendar.getInstance();
-                            reminderTime.set(Calendar.HOUR_OF_DAY, reminder.hour);
-                            reminderTime.set(Calendar.MINUTE, reminder.minute);
-
-                            if (reminderTime.before(now)) {
-                                // Xóa báo thức cũ
-                                snapshot.getRef().removeValue()
-                                        .addOnSuccessListener(aVoid -> {
-                                            // Lưu báo thức đã xóa vào bảng lịch sử
-                                            DatabaseReference historyRef = database.child("reminder_history").child(uid).push();
-                                            historyRef.setValue(reminder);
-                                            Log.d("Alarm", "Báo thức đã được xóa và lưu vào reminder_history.");
-                                            // Gọi lại loadAlarmHistory để cập nhật danh sách báo thức
-                                            loadAlarmHistory();
-                                        })
-                                        .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
-                            }
+                            // Xóa tất cả báo thức cũ
+                            snapshot.getRef().removeValue()
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Lưu báo thức đã xóa vào bảng reminder_history
+                                        DatabaseReference historyRef = database.child("reminder_history").child(uid).push();
+                                        historyRef.setValue(reminder)
+                                                .addOnSuccessListener(aVoid1 -> Log.d("Alarm", "Báo thức đã được lưu vào reminder_history."))
+                                                .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi lưu báo thức vào reminder_history: " + e.getMessage()));
+                                    })
+                                    .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
                         }
                     }
                 }
@@ -440,5 +432,6 @@ public class SetDrinkingTimeFragment extends Fragment {
             });
         }
     }
+
 
 }
