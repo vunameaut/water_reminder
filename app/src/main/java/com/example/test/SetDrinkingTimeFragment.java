@@ -229,7 +229,6 @@ public class SetDrinkingTimeFragment extends Fragment {
     }
 
     private void onDeleteClick(int position) {
-        // Kiểm tra xem chỉ số có hợp lệ không
         if (position < 0 || position >= alarmHistory.size()) {
             Toast.makeText(getContext(), "Chỉ số không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
@@ -237,7 +236,6 @@ public class SetDrinkingTimeFragment extends Fragment {
 
         Reminder reminderToDelete = alarmHistory.get(position);
 
-        // Kiểm tra xem ID báo thức có hợp lệ không
         if (reminderToDelete.id == null) {
             Toast.makeText(getContext(), "ID báo thức không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
@@ -253,20 +251,15 @@ public class SetDrinkingTimeFragment extends Fragment {
 
             reminderRef.removeValue()
                     .addOnSuccessListener(aVoid -> {
-                        // Kiểm tra lại chỉ số trước khi xóa
-                        if (position < alarmHistory.size()) {
-                            alarmHistory.remove(position);
-                            adapter.notifyItemRemoved(position);
-                        } else {
-                            Log.e("RemoveError", "Chỉ số không hợp lệ sau khi xóa từ Firebase.");
-                        }
+                        alarmHistory.remove(position);
+                        adapter.notifyItemRemoved(position);
                     })
                     .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
+
         } else {
             Log.e("UIDError", "UID người dùng không hợp lệ.");
         }
     }
-
 
     private void loadAlarmHistory() {
         String uid = getUserUid();
