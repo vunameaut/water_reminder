@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (id == R.id.bottom_nav_history) {
                     getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new HistoryFragment()).commit();
                 } else if (id == R.id.bottom_nav_notification) {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new SettingFragment()).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new SetDrinkingTimeFragment()).commit();
                 } else if (id == R.id.bottom_nav_account) {
                     getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AccountFragment()).commit();
                 }

@@ -55,8 +55,15 @@ public class AccountFragment extends Fragment {
         nameTextView = view.findViewById(R.id.nameTextView);
         emailTextView = view.findViewById(R.id.emailTextView);
         phoneTextView = view.findViewById(R.id.phoneTextView);
-        btn_edit = view.findViewById(R.id.btn_edit);
         btn_logout = view.findViewById(R.id.btn_logout);
+
+        btn_edit = view.findViewById(R.id.btn_edit);
+        btn_edit.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), Edit_Acc.class);
+            startActivity(intent);
+        });
+
+
 
         btn_logout.setOnClickListener(v -> logout());
 
@@ -76,6 +83,7 @@ public class AccountFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
