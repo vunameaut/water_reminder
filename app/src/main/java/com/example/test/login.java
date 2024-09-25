@@ -2,19 +2,17 @@ package com.example.test;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,17 +23,14 @@ public class login extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
+    private CheckBox rememberMeCheckBox;
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "LoginPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -43,9 +38,22 @@ public class login extends AppCompatActivity {
         emailEditText = findViewById(R.id.input_username);
         passwordEditText = findViewById(R.id.input_pass);
         loginButton = findViewById(R.id.sign_in_button);
-        ImageButton togglePasswordVisibility = findViewById(R.id.toggle_password_visibility);
+        rememberMeCheckBox = findViewById(R.id.remember_me_checkbox);
+
+        // Initialize SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Check if the UID is already remembered
+        String savedUID = sharedPreferences.getString("uid", null);
+        if (savedUID != null) {
+            // UID found, auto-login
+            Intent intent = new Intent(login.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
 
         // Toggle password visibility
+        ImageButton togglePasswordVisibility = findViewById(R.id.toggle_password_visibility);
         togglePasswordVisibility.setOnClickListener(v -> {
             if (passwordEditText.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
                 passwordEditText.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
@@ -67,7 +75,6 @@ public class login extends AppCompatActivity {
         // Login button event
         loginButton.setOnClickListener(v -> loginUser());
     }
-
     private void loginUser() {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
@@ -86,17 +93,31 @@ public class login extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     progressDialog.dismiss();
                     if (task.isSuccessful()) {
-                        // Login success
+                        // Đăng nhập thành công
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                        // Move to the main activity
-                        Intent intent = new Intent(login.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
+                        if (user != null) {
+                            Toast.makeText(login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+
+                            String uid = user.getUid(); // Lấy UID từ Firebase
+
+                            // Lưu UID sau khi đăng nhập thành công vào SharedPreferences
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("uid", uid);  // Luôn lưu UID
+                            editor.putBoolean("remember", rememberMeCheckBox.isChecked());  // Lưu trạng thái "Remember Me"
+                            editor.apply();
+
+                            // Chuyển UID qua MainActivity qua Intent (Optional)
+                            Intent intent = new Intent(login.this, MainActivity.class);
+                            intent.putExtra("uid", uid);  // Truyền UID qua Intent
+                            startActivity(intent);
+                            finish();
+                        }
                     } else {
-                        // Login failed, show error message
-                        Toast.makeText(login.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        // Đăng nhập thất bại
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
+                        Toast.makeText(login.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 }

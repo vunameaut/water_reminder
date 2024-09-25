@@ -7,21 +7,18 @@
     android:background="@drawable/edit_text_login">
 
     <!-- Hình ảnh giọt nước -->
-    <ImageView
-        android:id="@+id/water_drop_image"
-        android:layout_width="match_parent"
-        android:layout_height="231dp"
-        android:layout_alignParentTop="true"
-        app:srcCompat="@drawable/image" />
 
     <!-- Trường nhập Username -->
+
+    <!-- Container cho Password và biểu tượng mắt -->
+
     <EditText
         android:id="@+id/input_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/water_drop_image"
+        android:layout_alignParentTop="true"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="279dp"
         android:layout_marginEnd="30dp"
         android:background="@drawable/edit_text_login"
         android:drawableLeft="@drawable/ic_user"
@@ -31,7 +28,6 @@
         android:textColor="#230707"
         android:textSize="20sp" />
 
-    <!-- Container cho Password và biểu tượng mắt -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -67,35 +63,19 @@
             android:contentDescription="Toggle password visibility" />
     </RelativeLayout>
 
+    <!-- Nút Sign in -->
 
-    <TextView
-        android:id="@+id/forgot_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/sign_in_button"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="21dp"
-        android:layout_marginEnd="94dp"
-        android:text="Forgot your password?"
-        android:textColor="#673AB7"
-        android:textSize="23sp" />
+    <!-- Checkbox "Nhớ đăng nhập" -->
 
-    <TextView
-        android:id="@+id/sign_up_redirect"
-        android:layout_width="318dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/forgot_password"
-        android:layout_alignParentStart="true"
+    <ImageView
+        android:id="@+id/water_drop_image"
+        android:layout_width="match_parent"
+        android:layout_height="231dp"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="45dp"
-        android:layout_marginTop="17dp"
-        android:layout_marginEnd="48dp"
-        android:layout_marginBottom="81dp"
-        android:gravity="center_horizontal"
-        android:text="Don't have an account? Sign up"
-        android:textColor="#673AB7"
-        android:textSize="20sp" />
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="-17dp"
+        app:srcCompat="@drawable/image" />
 
     <Button
         android:id="@+id/sign_in_button"
@@ -103,12 +83,49 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="443dp"
+        android:layout_marginTop="439dp"
         android:layout_marginEnd="30dp"
         android:background="@drawable/btn_login"
         android:text="Sign in"
         android:textColor="#FFFFFF"
         android:textSize="20sp" />
 
-    <!-- TextView để chuyển sang form đăng ký -->
+    <TextView
+        android:id="@+id/sign_up_redirect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/forgot_password"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="99dp"
+        android:text="Don't have an account? Sign up"
+        android:textColor="#673AB7"
+        android:textSize="16sp" />
+
+    <CheckBox
+        android:id="@+id/remember_me_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sign_in_button"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:text="Nhớ đăng nhập" />
+
+    <TextView
+        android:id="@+id/forgot_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sign_in_button"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="42dp"
+        android:text="Forgot your password?"
+        android:textColor="#673AB7"
+        android:textSize="16sp" />
+
+    <!-- TextView "Quên mật khẩu" -->
+
+    <!-- TextView "Đăng ký tài khoản" -->
+
 </RelativeLayout>

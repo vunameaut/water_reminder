@@ -59,11 +59,21 @@
 
     <!-- Nút để chỉnh sửa thông tin -->
     <Button
+        android:id="@+id/btn_edit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Edit Account"
-        android:textColor="#FFFFFF"
+        android:layout_gravity="center_horizontal"
         android:backgroundTint="#1976D2"
-        android:layout_gravity="center_horizontal"/>
+        android:text="Edit Account"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btn_logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:backgroundTint="#BC261C"
+        android:text="log out"
+        android:textColor="#FFFFFF" />
 
 </LinearLayout>
