@@ -221,7 +221,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             } else {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
             }
-            Snackbar.make(recyclerView, "Báo thức đã được đặt cho " + hour + ":" + minute, Snackbar.LENGTH_LONG).show();
+            //Snackbar.make(recyclerView, "Báo thức đã được đặt cho " + hour + ":" + minute, Snackbar.LENGTH_LONG).show();
 
         } else {
             Snackbar.make(recyclerView, "Không thể khởi tạo AlarmManager.", Snackbar.LENGTH_LONG).show();
