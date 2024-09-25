@@ -42,8 +42,19 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         String time = String.format("%02d:%02d", reminder.hour, reminder.minute);
         holder.timeTextView.setText(time);
 
-        holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(position));
-        holder.deleteButton.setOnClickListener(v -> onDeleteClickListener.onDeleteClick(position));
+        // Đặt sự kiện khi người dùng click vào item báo thức
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position);
+            }
+        });
+
+        // Đặt sự kiện khi người dùng click vào nút xóa báo thức
+        holder.deleteButton.setOnClickListener(v -> {
+            if (onDeleteClickListener != null) {
+                onDeleteClickListener.onDeleteClick(position);
+            }
+        });
     }
 
     @Override
@@ -51,6 +62,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         return alarmList.size();
     }
 
+    // ViewHolder của RecyclerView để quản lý các phần tử trong danh sách
     public static class AlarmViewHolder extends RecyclerView.ViewHolder {
 
         TextView titleTextView;
@@ -67,10 +79,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmViewHol
         }
     }
 
+    // Giao diện cho sự kiện khi click vào một item báo thức
     public interface OnItemClickListener {
         void onItemClick(int position);
     }
 
+    // Giao diện cho sự kiện khi click vào nút xóa báo thức
     public interface OnDeleteClickListener {
         void onDeleteClick(int position);
     }

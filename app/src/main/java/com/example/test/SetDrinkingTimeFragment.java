@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -83,19 +84,17 @@ public class SetDrinkingTimeFragment extends Fragment {
         });
 
         loadAlarmHistory();
-        deleteOldAlarms();  // Gọi hàm xóa báo thức cũ ngay khi khởi chạy
+        deleteOldAlarms();
+        resetAlarms();
 
         // Đặt Handler để refresh mỗi 3 giây
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
-                // Gọi lại loadAlarmHistory để tải lại dữ liệu từ Firebase
                 loadAlarmHistory();
-                // Lặp lại sau 3 giây
-                handler.postDelayed(this, 3000);
+                handler.postDelayed(this, 1000);
             }
         };
-        // Bắt đầu refresh mỗi 3 giây
         handler.post(refreshRunnable);
 
         return view;
@@ -104,10 +103,33 @@ public class SetDrinkingTimeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Dừng handler khi Fragment bị hủy
-        handler.removeCallbacks(refreshRunnable);
+        handler.removeCallbacks(refreshRunnable);  // Dừng handler khi Fragment bị hủy
     }
 
+    private void resetAlarms() {
+        String uid = getUserUid();
+        if (uid != null) {
+            DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference remindersRef = database.child("users").child(uid).child("alarmHistory");
+
+            remindersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Reminder reminder = snapshot.getValue(Reminder.class);
+                        if (reminder != null) {
+                            setAlarm(reminder.hour, reminder.minute, reminder.timestamp);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("FirebaseError", "Lỗi khi khởi tạo lại báo thức: " + databaseError.getMessage());
+                }
+            });
+        }
+    }
 
     private boolean checkExactAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -131,7 +153,6 @@ public class SetDrinkingTimeFragment extends Fragment {
         return sharedPreferences.getString(KEY_UID, null);
     }
 
-    // Quá trình đặt báo thức
     private void setAlarmProcess() {
         int hour = timePicker.getHour();
         int minute = timePicker.getMinute();
@@ -162,7 +183,6 @@ public class SetDrinkingTimeFragment extends Fragment {
         String uid = getUserUid();
         if (uid != null) {
             DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-            // Lưu lịch sử báo thức rõ ràng hơn
             DatabaseReference newReminderRef = database.child("users").child(uid).child("alarmHistory").child(alarmTime);
             String newReminderId = newReminderRef.getKey();
 
@@ -171,8 +191,8 @@ public class SetDrinkingTimeFragment extends Fragment {
             newReminderRef.setValue(newReminder)
                     .addOnSuccessListener(aVoid -> {
                         alarmHistory.add(newReminder);
-                        adapter.notifyItemInserted(alarmHistory.size() - 1); // Thêm mới báo thức vào RecyclerView
-                        setAlarm(hour, minute, timestamp); // Đặt báo thức
+                        adapter.notifyItemInserted(alarmHistory.size() - 1);
+                        setAlarm(hour, minute, timestamp);
                     })
                     .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi lưu báo thức: " + e.getMessage()));
 
@@ -205,139 +225,39 @@ public class SetDrinkingTimeFragment extends Fragment {
 
         } else {
             Snackbar.make(recyclerView, "Không thể khởi tạo AlarmManager.", Snackbar.LENGTH_LONG).show();
-
         }
     }
 
     private void onDeleteClick(int position) {
         if (position < 0 || position >= alarmHistory.size()) {
-            Log.e("DeleteError", "Chỉ số không hợp lệ: " + position);
+            Toast.makeText(getContext(), "Chỉ số không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Reminder reminderToDelete = alarmHistory.get(position);
 
         if (reminderToDelete.id == null) {
-            Log.e("DeleteError", "ID báo thức không hợp lệ.");
+            Toast.makeText(getContext(), "ID báo thức không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String uid = getUserUid();
         if (uid != null) {
             DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference reminderRef = database.child("users").child(uid).child("reminder_history").child(reminderToDelete.id);
+            DatabaseReference reminderRef = database.child("users").child(uid).child("alarmHistory").child(reminderToDelete.id);
 
-            // Hủy báo thức cũ
+            // Hủy báo thức và xóa khỏi Firebase
             cancelAlarm(reminderToDelete.hour, reminderToDelete.minute, reminderToDelete.timestamp);
 
             reminderRef.removeValue()
                     .addOnSuccessListener(aVoid -> {
-                        if (position >= 0 && position < alarmHistory.size()) {
-                            alarmHistory.remove(position);
-                            adapter.notifyItemRemoved(position);
-                            loadAlarmHistory();
-                            Log.d("Alarm", "Báo thức đã được xóa.");
-                        } else {
-                            Log.e("DeleteError", "Chỉ số không hợp lệ sau khi xóa: " + position);
-                        }
-                    })
-                    .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
-        } else {
-            Log.e("UIDError", "UID người dùng không hợp lệ.");
-        }
-    }
-
-    private void openEditAlarmDialog(Reminder reminder, int position) {
-        // Tạo dialog chỉnh sửa báo thức
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Chỉnh sửa báo thức");
-
-        // Sử dụng layout TimePicker để chọn lại giờ và phút
-        TimePicker timePicker = new TimePicker(getContext());
-        timePicker.setHour(reminder.hour);
-        timePicker.setMinute(reminder.minute);
-        builder.setView(timePicker);
-
-        // Nút "Lưu" để xác nhận chỉnh sửa
-        builder.setPositiveButton("Lưu", (dialog, which) -> {
-            int newHour = timePicker.getHour();
-            int newMinute = timePicker.getMinute();
-
-            // Kiểm tra nếu giờ và phút mới khác với giờ phút hiện tại
-            if (newHour != reminder.hour || newMinute != reminder.minute) {
-                // Xóa báo thức cũ
-                deleteOldAlarm(reminder, position);
-
-                // Tạo báo thức mới với giờ và phút mới
-                createNewAlarm(newHour, newMinute, position);
-            }
-        });
-
-        // Nút "Hủy" để thoát khỏi dialog
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
-
-        // Hiển thị dialog
-        builder.create().show();
-    }
-
-    private void deleteOldAlarm(Reminder reminder, int position) {
-        String uid = getUserUid();
-        if (uid != null && reminder.id != null) {
-            DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference reminderRef = database.child("users").child(uid).child("alarmHistory").child(reminder.id);
-
-            // Hủy báo thức cũ
-            cancelAlarm(reminder.hour, reminder.minute, reminder.timestamp);
-
-            // Xóa báo thức cũ khỏi Firebase
-            reminderRef.removeValue()
-                    .addOnSuccessListener(aVoid -> {
-                        // Xóa báo thức khỏi danh sách hiển thị
                         alarmHistory.remove(position);
                         adapter.notifyItemRemoved(position);
-                        Log.d("Alarm", "Báo thức cũ đã được xóa.");
                     })
                     .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
-        }
-    }
 
-    private void createNewAlarm(int newHour, int newMinute, int position) {
-        String newId = String.format("%02d:%02d", newHour, newMinute); // Tạo id mới từ giờ và phút mới
-        String uid = getUserUid();
-        if (uid != null) {
-            DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference newReminderRef = database.child("users").child(uid).child("alarmHistory").child(newId);
-
-            String title = "Nhắc nhở mới";
-            String description = "Nhắc nhở lúc " + newId;
-            String timestamp = String.valueOf(System.currentTimeMillis());
-
-            Reminder newReminder = new Reminder(newId, title, description, timestamp, newHour, newMinute);
-
-            newReminderRef.setValue(newReminder)
-                    .addOnSuccessListener(aVoid -> {
-                        // Thêm báo thức mới vào danh sách hiển thị
-                        alarmHistory.add(position, newReminder);
-                        adapter.notifyItemInserted(position);
-                        Log.d("Alarm", "Báo thức mới đã được tạo.");
-
-                        // Đặt lại báo thức mới
-                        setAlarm(newHour, newMinute, timestamp);  // Đặt báo thức mới
-                    })
-                    .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi tạo báo thức: " + e.getMessage()));
-        }
-    }
-
-    private void cancelAlarm(int hour, int minute, String timestamp) {
-        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(getContext(), AlarmReceiver.class);
-
-        int requestCode = (hour * 10000 + minute * 100 + timestamp.hashCode()) & 0xfffffff;
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        if (alarmManager != null) {
-            alarmManager.cancel(pendingIntent);  // Hủy báo thức cũ
-            Log.d("Alarm", "Báo thức cũ đã được hủy.");
+        } else {
+            Log.e("UIDError", "UID người dùng không hợp lệ.");
         }
     }
 
@@ -352,37 +272,22 @@ public class SetDrinkingTimeFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     alarmHistory.clear();
 
-                    Calendar now = Calendar.getInstance();
-
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Reminder reminder = snapshot.getValue(Reminder.class);
-
                         if (reminder != null) {
-                            Calendar reminderTime = Calendar.getInstance();
-                            reminderTime.set(Calendar.HOUR_OF_DAY, reminder.hour);
-                            reminderTime.set(Calendar.MINUTE, reminder.minute);
-
-                            if (reminderTime.before(now)) {
-                                // Xóa báo thức đã qua thời gian
-                                snapshot.getRef().removeValue()
-                                        .addOnSuccessListener(aVoid -> {
-                                            Log.d("Alarm", "Báo thức đã được xóa do hết hạn.");
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage());
-                                        });
-                            } else {
-                                alarmHistory.add(reminder);
-                            }
+                            alarmHistory.add(reminder);
                         }
                     }
 
+                    // Sắp xếp lịch sử báo thức theo giờ
                     Collections.sort(alarmHistory, new Comparator<Reminder>() {
                         @Override
-                        public int compare(Reminder r1, Reminder r2) {
-                            int time1 = r1.hour * 60 + r1.minute;
-                            int time2 = r2.hour * 60 + r2.minute;
-                            return Integer.compare(time1, time2);
+                        public int compare(Reminder o1, Reminder o2) {
+                            if (o1.hour != o2.hour) {
+                                return Integer.compare(o1.hour, o2.hour);
+                            } else {
+                                return Integer.compare(o1.minute, o2.minute);
+                            }
                         }
                     });
 
@@ -391,13 +296,38 @@ public class SetDrinkingTimeFragment extends Fragment {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e("FirebaseError", "Lỗi khi tải lịch sử báo thức: " + databaseError.getMessage());
+                    Log.e("FirebaseError", "Lỗi khi tải dữ liệu báo thức: " + databaseError.getMessage());
                 }
             });
         }
     }
 
-    // Hàm xóa các báo thức đã qua và lưu vào reminder_history
+    // Hàm lưu báo thức vào reminder_history và xóa khỏi alarmHistory
+    private void saveReminderToHistoryAndDelete(Reminder reminder, DatabaseReference reminderRef) {
+        String uid = getUserUid();
+        if (uid == null) {
+            Log.e("UIDError", "UID người dùng không hợp lệ.");
+            return;
+        }
+
+        // Lưu vào reminder_history trước khi xóa
+        DatabaseReference historyRef = FirebaseDatabase.getInstance().getReference()
+                .child("reminder_history").child(uid).push();
+
+        historyRef.setValue(reminder)
+                .addOnSuccessListener(aVoid1 -> {
+                    Log.d("FirebaseSuccess", "Báo thức đã được lưu vào reminder_history.");
+                    // Xóa khỏi alarmHistory sau khi lưu thành công
+                    reminderRef.removeValue()
+                            .addOnSuccessListener(aVoid -> {
+                                cancelAlarm(reminder.hour, reminder.minute, reminder.timestamp);
+                                Log.d("FirebaseSuccess", "Báo thức đã được xóa khỏi alarmHistory.");
+                            })
+                            .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức khỏi alarmHistory: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi lưu báo thức vào reminder_history: " + e.getMessage()));
+    }
+
     private void deleteOldAlarms() {
         String uid = getUserUid();
         if (uid != null) {
@@ -411,16 +341,14 @@ public class SetDrinkingTimeFragment extends Fragment {
                         Reminder reminder = snapshot.getValue(Reminder.class);
 
                         if (reminder != null) {
-                            // Xóa tất cả báo thức cũ
-                            snapshot.getRef().removeValue()
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Lưu báo thức đã xóa vào bảng reminder_history
-                                        DatabaseReference historyRef = database.child("reminder_history").child(uid).push();
-                                        historyRef.setValue(reminder)
-                                                .addOnSuccessListener(aVoid1 -> Log.d("Alarm", "Báo thức đã được lưu vào reminder_history."))
-                                                .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi lưu báo thức vào reminder_history: " + e.getMessage()));
-                                    })
-                                    .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
+                            Calendar reminderTime = Calendar.getInstance();
+                            reminderTime.set(Calendar.HOUR_OF_DAY, reminder.hour);
+                            reminderTime.set(Calendar.MINUTE, reminder.minute);
+
+                            if (reminderTime.before(Calendar.getInstance())) {
+                                DatabaseReference reminderRef = snapshot.getRef();
+                                saveReminderToHistoryAndDelete(reminder, reminderRef);
+                            }
                         }
                     }
                 }
@@ -433,5 +361,38 @@ public class SetDrinkingTimeFragment extends Fragment {
         }
     }
 
+    private void openEditAlarmDialog(Reminder reminder, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Sửa báo thức")
+                .setMessage("Bạn có muốn sửa báo thức lúc " + reminder.hour + ":" + reminder.minute + " không?")
+                .setPositiveButton("Sửa", (dialog, which) -> {
+                    timePicker.setHour(reminder.hour);
+                    timePicker.setMinute(reminder.minute);
+                    setAlarmButton.setText("Sửa báo thức");
+                    setAlarmButton.setOnClickListener(v -> {
+                        // Xóa báo thức cũ
+                        onDeleteClick(position);
+                        // Thêm báo thức mới
+                        setAlarmProcess();
+                    });
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private void cancelAlarm(int hour, int minute, String timestamp) {
+        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getContext(), AlarmReceiver.class);
+
+        int requestCode = (hour * 10000 + minute * 100 + timestamp.hashCode()) & 0xfffffff;
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);  // Hủy báo thức cũ
+            Log.d("Alarm", "Báo thức cũ đã được hủy.");
+        } else {
+            Log.e("AlarmError", "Không thể hủy báo thức cũ.");
+        }
+    }
 }
