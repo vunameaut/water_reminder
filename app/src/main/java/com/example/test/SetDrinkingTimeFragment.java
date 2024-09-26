@@ -51,8 +51,9 @@ public class SetDrinkingTimeFragment extends Fragment {
     private static final String PREFS_NAME = "LoginPrefs";
     private static final String KEY_UID = "uid";
     private static final String KEY_PERMISSION_GRANTED = "isPermissionGranted";
-    private Handler handler = new Handler();
-    private Runnable refreshRunnable;
+
+    
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -83,28 +84,14 @@ public class SetDrinkingTimeFragment extends Fragment {
             }
         });
 
-        loadAlarmHistory();
+        loadAlarmHistory();  // Để Firebase tự lắng nghe và cập nhật
+
         deleteOldAlarms();
         resetAlarms();
-
-        // Đặt Handler để refresh mỗi 1 giây
-        refreshRunnable = new Runnable() {
-            @Override
-            public void run() {
-                loadAlarmHistory();
-                handler.postDelayed(this, 500);
-            }
-        };
-        handler.post(refreshRunnable);
 
         return view;
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacks(refreshRunnable);  // Dừng handler khi Fragment bị hủy
-    }
 
     private void resetAlarms() {
         String uid = getUserUid();
@@ -367,22 +354,64 @@ public class SetDrinkingTimeFragment extends Fragment {
 
     private void openEditAlarmDialog(Reminder reminder, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Sửa báo thức")
-                .setMessage("Bạn có muốn sửa báo thức lúc " + reminder.hour + ":" + reminder.minute + " không?")
-                .setPositiveButton("Sửa", (dialog, which) -> {
-                    timePicker.setHour(reminder.hour);
-                    timePicker.setMinute(reminder.minute);
-                    setAlarmButton.setText("Sửa báo thức");
-                    setAlarmButton.setOnClickListener(v -> {
-                        // Xóa báo thức cũ
-                        onDeleteClick(position);
-                        // Thêm báo thức mới
-                        setAlarmProcess();
-                    });
-                })
-                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
-                .show();
+        builder.setTitle("Chỉnh sửa báo thức");
+
+        // Sử dụng TimePicker để chọn lại giờ và phút
+        TimePicker timePicker = new TimePicker(getContext());
+        timePicker.setHour(reminder.hour);
+        timePicker.setMinute(reminder.minute);
+        builder.setView(timePicker);
+
+        // Nút "Lưu" để xác nhận chỉnh sửa
+        builder.setPositiveButton("Lưu", (dialog, which) -> {
+            int newHour = timePicker.getHour();
+            int newMinute = timePicker.getMinute();
+
+            if (newHour != reminder.hour || newMinute != reminder.minute) {
+                String uid = getUserUid();
+                if (uid != null) {
+                    DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+                    DatabaseReference reminderRef = database.child("users").child(uid).child("alarmHistory").child(reminder.id);
+
+                    // Hủy báo thức cũ
+                    cancelAlarm(reminder.hour, reminder.minute, reminder.timestamp);
+
+                    // Tạo timestamp mới
+                    String newTimestamp = String.valueOf(System.currentTimeMillis());
+                    String newDescription = "Nhắc nhở lúc " + String.format("%02d:%02d", newHour, newMinute);
+
+                    // Cập nhật toàn bộ thông tin của báo thức với giờ phút mới
+                    reminder.hour = newHour;
+                    reminder.minute = newMinute;
+                    reminder.timestamp = newTimestamp;
+                    reminder.description = newDescription;
+                    reminder.title = "Nhắc nhở đã sửa";  // Cập nhật tiêu đề nếu cần
+
+                    // Cập nhật Firebase
+                    reminderRef.setValue(reminder)
+                            .addOnSuccessListener(aVoid -> {
+                                // Đặt lại báo thức với giờ và phút mới
+                                setAlarm(newHour, newMinute, newTimestamp);
+
+                                // Cập nhật danh sách báo thức và thông báo cho adapter
+                                alarmHistory.set(position, reminder);
+                                adapter.notifyItemChanged(position);
+                            })
+                            .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi cập nhật báo thức: " + e.getMessage()));
+                } else {
+                    Log.e("UIDError", "UID người dùng không hợp lệ.");
+                }
+            }
+        });
+
+        // Nút "Hủy" để thoát khỏi dialog
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+
+        // Hiển thị dialog
+        builder.create().show();
     }
+
+
 
     @SuppressLint("UnspecifiedImmutableFlag")
     private void cancelAlarm(int hour, int minute, String timestamp) {
