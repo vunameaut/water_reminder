@@ -56,8 +56,6 @@ public class SetDrinkingTimeFragment extends Fragment {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
 
-
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_set_drinking_time, container, false);
@@ -87,28 +85,21 @@ public class SetDrinkingTimeFragment extends Fragment {
             }
         });
 
-        // Thực hiện tải dữ liệu ban đầu
+        // Gọi hàm loadAlarmHistory() để tải dữ liệu lần đầu tiên
         loadAlarmHistory();
-        deleteOldAlarms();
-        resetAlarms();
 
-        // Đặt Handler để refresh mỗi 500ms
+        // Đặt Runnable để tự động làm mới mỗi 1 giây
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
-                loadAlarmHistory();  // Tải lại dữ liệu
-                handler.postDelayed(this, 500);  // Lặp lại sau 500ms
+                // Tải lại dữ liệu và cập nhật lại giao diện
+                loadAlarmHistory();
+                handler.postDelayed(this, 1000);  // Lặp lại sau mỗi 1 giây
             }
         };
         handler.post(refreshRunnable);  // Bắt đầu vòng lặp làm mới
 
         return view;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacks(refreshRunnable);  // Dừng handler khi Fragment bị hủy
     }
 
 
@@ -278,7 +269,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             DatabaseReference database = FirebaseDatabase.getInstance().getReference();
             DatabaseReference remindersRef = database.child("users").child(uid).child("alarmHistory");
 
-            remindersRef.addValueEventListener(new ValueEventListener() {
+            remindersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     alarmHistory.clear();  // Xóa dữ liệu cũ trước khi tải mới
@@ -302,7 +293,7 @@ public class SetDrinkingTimeFragment extends Fragment {
                         }
                     });
 
-                    adapter.notifyDataSetChanged();  // Thông báo cho adapter cập nhật RecyclerView
+                    adapter.notifyDataSetChanged();  // Cập nhật lại RecyclerView
                 }
 
                 @Override
@@ -312,6 +303,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             });
         }
     }
+
 
 
     // Hàm lưu báo thức vào reminder_history và xóa khỏi alarmHistory
