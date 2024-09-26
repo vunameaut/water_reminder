@@ -1,4 +1,4 @@
-package com.example.test;
+package com.example.test.item;
 
 public class Reminder {
 
@@ -23,7 +23,7 @@ public class Reminder {
         this.minute = minute;
     }
 
-    // Các getter và setter (nếu cần)
+
     public String getId() {
         return id;
     }
