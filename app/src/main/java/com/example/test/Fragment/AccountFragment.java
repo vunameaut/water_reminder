@@ -1,9 +1,10 @@
-package com.example.test;
+package com.example.test.Fragment;
 
 import static android.app.Activity.RESULT_OK;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.test.model.Edit_Acc;
+import com.example.test.R;
+import com.example.test.login;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -13,7 +14,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import android.content.Context;
@@ -60,11 +60,8 @@ public class AccountFragment extends Fragment {
         btn_edit = view.findViewById(R.id.btn_edit);
         btn_edit.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), Edit_Acc.class);
-            startActivity(intent);
+            startActivityForResult(intent, 2);
         });
-
-
-
         btn_logout.setOnClickListener(v -> logout());
 
         storage = FirebaseStorage.getInstance();
@@ -89,12 +86,18 @@ public class AccountFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            loadUserInfo();
+        }
+
+        // Xử lý ảnh đại diện
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
             Picasso.get().load(selectedImageUri).into(avatarImageView);
             uploadAvatarImage(selectedImageUri);
         }
     }
+
 
     private void loadAvatarImage() {
         String userId = getUserId();

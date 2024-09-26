@@ -1,4 +1,4 @@
-package com.example.test;
+package com.example.test.model;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -21,6 +21,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.test.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 

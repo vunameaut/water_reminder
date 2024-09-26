@@ -24,11 +24,11 @@
             android:name=".dialog_edit_alarm"
             android:exported="false" />
         <activity
-            android:name=".Edit_Acc"
+            android:name=".model.Edit_Acc"
             android:exported="false" />
 
         <receiver
-            android:name=".AlarmReceiver"
+            android:name=".model.AlarmReceiver"
             android:exported="true" />
 
         <activity

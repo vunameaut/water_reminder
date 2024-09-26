@@ -10,6 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.example.test.Fragment.AccountFragment;
+import com.example.test.Fragment.HistoryFragment;
+import com.example.test.Fragment.HomeFragment;
+import com.example.test.Fragment.SetDrinkingTimeFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import androidx.core.app.NotificationCompat;

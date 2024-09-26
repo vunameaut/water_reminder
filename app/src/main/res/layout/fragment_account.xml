@@ -6,7 +6,7 @@
     android:padding="16dp"
     android:orientation="vertical"
     android:background="#FBFBFB"
-    tools:context=".AccountFragment">
+    tools:context=".Fragment.AccountFragment">
 
     <!-- Avatar -->
     <ImageView

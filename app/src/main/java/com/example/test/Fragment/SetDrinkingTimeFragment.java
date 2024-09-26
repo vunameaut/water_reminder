@@ -1,4 +1,4 @@
-package com.example.test;
+package com.example.test.Fragment;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -25,6 +25,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.test.model.AlarmReceiver;
+import com.example.test.R;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.picasso)
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -45,4 +44,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+
 }
