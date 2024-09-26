@@ -87,12 +87,12 @@ public class SetDrinkingTimeFragment extends Fragment {
         deleteOldAlarms();
         resetAlarms();
 
-        // Đặt Handler để refresh mỗi 3 giây
+        // Đặt Handler để refresh mỗi 1 giây
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
                 loadAlarmHistory();
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 500);
             }
         };
         handler.post(refreshRunnable);
@@ -221,7 +221,6 @@ public class SetDrinkingTimeFragment extends Fragment {
             } else {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
             }
-            //Snackbar.make(recyclerView, "Báo thức đã được đặt cho " + hour + ":" + minute, Snackbar.LENGTH_LONG).show();
 
         } else {
             Snackbar.make(recyclerView, "Không thể khởi tạo AlarmManager.", Snackbar.LENGTH_LONG).show();
@@ -229,6 +228,7 @@ public class SetDrinkingTimeFragment extends Fragment {
     }
 
     private void onDeleteClick(int position) {
+        // Kiểm tra vị trí hợp lệ trước khi thao tác
         if (position < 0 || position >= alarmHistory.size()) {
             Toast.makeText(getContext(), "Chỉ số không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
@@ -251,8 +251,11 @@ public class SetDrinkingTimeFragment extends Fragment {
 
             reminderRef.removeValue()
                     .addOnSuccessListener(aVoid -> {
-                        alarmHistory.remove(position);
-                        adapter.notifyItemRemoved(position);
+                        // Kiểm tra và xóa khỏi alarmHistory nếu còn tồn tại
+                        if (position < alarmHistory.size()) {
+                            alarmHistory.remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
                     })
                     .addOnFailureListener(e -> Log.e("FirebaseError", "Lỗi khi xóa báo thức: " + e.getMessage()));
 
@@ -260,6 +263,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             Log.e("UIDError", "UID người dùng không hợp lệ.");
         }
     }
+
 
     private void loadAlarmHistory() {
         String uid = getUserUid();
