@@ -94,12 +94,14 @@ public class SetDrinkingTimeFragment extends Fragment {
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
-                // Tải lại dữ liệu và cập nhật lại giao diện
+
                 loadAlarmHistory();
-                handler.postDelayed(this, 1000);  // Lặp lại sau mỗi 1 giây
+                handler.postDelayed(this, 500);
             }
         };
-        handler.post(refreshRunnable);  // Bắt đầu vòng lặp làm mới
+        handler.post(refreshRunnable);
+        deleteOldAlarms();
+        resetAlarms();
 
         return view;
     }
