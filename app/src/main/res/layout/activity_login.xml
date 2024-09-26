@@ -23,7 +23,7 @@
         android:background="@drawable/edit_text_login"
         android:drawableLeft="@drawable/ic_user"
         android:drawablePadding="10dp"
-        android:hint="Username..."
+        android:hint="Email..."
         android:padding="15dp"
         android:textColor="#230707"
         android:textSize="20sp" />
