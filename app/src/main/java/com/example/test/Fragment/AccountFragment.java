@@ -5,6 +5,8 @@ import static android.app.Activity.RESULT_OK;
 import com.example.test.model.Edit_Acc;
 import com.example.test.R;
 import com.example.test.login;
+import com.example.test.ChangePasswordActivity;
+import com.example.test.SoundNotificationsActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -43,7 +45,7 @@ public class AccountFragment extends Fragment {
     private FirebaseStorage storage;
     private StorageReference storageRef;
     private DatabaseReference databaseRef;
-    private Button btn_edit, btn_logout;
+    private Button btn_edit, btn_logout, btn_change_password, btn_sounds_notifications;
 
     private Uri selectedImageUri;
 
@@ -56,12 +58,25 @@ public class AccountFragment extends Fragment {
         emailTextView = view.findViewById(R.id.emailTextView);
         phoneTextView = view.findViewById(R.id.phoneTextView);
         btn_logout = view.findViewById(R.id.btn_logout);
-
         btn_edit = view.findViewById(R.id.btn_edit);
+        btn_change_password = view.findViewById(R.id.btn_change_password);
+        btn_sounds_notifications = view.findViewById(R.id.btn_sounds_notifications);
+
         btn_edit.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), Edit_Acc.class);
             startActivityForResult(intent, 2);
         });
+
+        btn_change_password.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ChangePasswordActivity.class);
+            startActivity(intent);
+        });
+
+        btn_sounds_notifications.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), SoundNotificationsActivity.class);
+            startActivity(intent);
+        });
+
         btn_logout.setOnClickListener(v -> logout());
 
         storage = FirebaseStorage.getInstance();
@@ -81,7 +96,6 @@ public class AccountFragment extends Fragment {
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -97,7 +111,6 @@ public class AccountFragment extends Fragment {
             uploadAvatarImage(selectedImageUri);
         }
     }
-
 
     private void loadAvatarImage() {
         String userId = getUserId();

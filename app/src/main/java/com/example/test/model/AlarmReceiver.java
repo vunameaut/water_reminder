@@ -121,10 +121,21 @@ public class AlarmReceiver extends BroadcastReceiver {
             return;
         }
 
+        SharedPreferences sharedPreferences = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        String soundUriString = sharedPreferences.getString("notification_sound", null);
+        Uri soundUri;
+
+        if (soundUriString != null) {
+            soundUri = Uri.parse(soundUriString);
+        } else {
+            soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification) // Thay bằng icon của bạn
                 .setContentTitle("Nhắc nhở uống nước")
                 .setContentText("Đến giờ uống nước rồi!")
+                .setSound(soundUri) // Sử dụng âm thanh đã chọn
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
@@ -132,8 +143,18 @@ public class AlarmReceiver extends BroadcastReceiver {
         notificationManager.notify(1, builder.build());
     }
 
+
     private void playAlarmSound(Context context) {
-        Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        String soundUriString = sharedPreferences.getString("notification_sound", null);
+        Uri alarmUri;
+
+        if (soundUriString != null) {
+            alarmUri = Uri.parse(soundUriString);
+        } else {
+            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        }
+
         if (alarmUri == null) {
             alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         }
@@ -155,6 +176,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             e.printStackTrace();
         }
     }
+
 
     private String getUserUid(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
