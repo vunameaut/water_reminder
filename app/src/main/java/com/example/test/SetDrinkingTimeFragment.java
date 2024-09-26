@@ -25,20 +25,21 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.test.adapter.AlarmAdapter;
-import com.example.test.Reminder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.example.test.Reminder;
+import com.example.test.adapter.AlarmAdapter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 
 public class SetDrinkingTimeFragment extends Fragment {
 
@@ -52,7 +53,9 @@ public class SetDrinkingTimeFragment extends Fragment {
     private static final String KEY_UID = "uid";
     private static final String KEY_PERMISSION_GRANTED = "isPermissionGranted";
 
-    
+    private Handler handler = new Handler();
+    private Runnable refreshRunnable;
+
 
 
     @Override
@@ -84,13 +87,30 @@ public class SetDrinkingTimeFragment extends Fragment {
             }
         });
 
-        loadAlarmHistory();  // Để Firebase tự lắng nghe và cập nhật
-
+        // Thực hiện tải dữ liệu ban đầu
+        loadAlarmHistory();
         deleteOldAlarms();
         resetAlarms();
 
+        // Đặt Handler để refresh mỗi 500ms
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                loadAlarmHistory();  // Tải lại dữ liệu
+                handler.postDelayed(this, 500);  // Lặp lại sau 500ms
+            }
+        };
+        handler.post(refreshRunnable);  // Bắt đầu vòng lặp làm mới
+
         return view;
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        handler.removeCallbacks(refreshRunnable);  // Dừng handler khi Fragment bị hủy
+    }
+
 
 
     private void resetAlarms() {
@@ -261,7 +281,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             remindersRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    alarmHistory.clear();
+                    alarmHistory.clear();  // Xóa dữ liệu cũ trước khi tải mới
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Reminder reminder = snapshot.getValue(Reminder.class);
@@ -270,7 +290,7 @@ public class SetDrinkingTimeFragment extends Fragment {
                         }
                     }
 
-                    // Sắp xếp lịch sử báo thức theo giờ
+                    // Sắp xếp lại danh sách báo thức
                     Collections.sort(alarmHistory, new Comparator<Reminder>() {
                         @Override
                         public int compare(Reminder o1, Reminder o2) {
@@ -282,7 +302,7 @@ public class SetDrinkingTimeFragment extends Fragment {
                         }
                     });
 
-                    adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();  // Thông báo cho adapter cập nhật RecyclerView
                 }
 
                 @Override
@@ -292,6 +312,7 @@ public class SetDrinkingTimeFragment extends Fragment {
             });
         }
     }
+
 
     // Hàm lưu báo thức vào reminder_history và xóa khỏi alarmHistory
     private void saveReminderToHistoryAndDelete(Reminder reminder, DatabaseReference reminderRef) {
