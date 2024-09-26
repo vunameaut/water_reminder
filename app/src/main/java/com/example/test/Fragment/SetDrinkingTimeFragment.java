@@ -33,7 +33,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.example.test.Reminder;
+import com.example.test.item.Reminder;
 import com.example.test.adapter.AlarmAdapter;
 
 import java.util.ArrayList;
