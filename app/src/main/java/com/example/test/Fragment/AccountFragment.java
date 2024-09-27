@@ -117,7 +117,7 @@ public class AccountFragment extends Fragment {
         if (userId != null) {
             StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
             avatarRef.getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).into(avatarImageView))
-                    .addOnFailureListener(exception -> Toast.makeText(getContext(), "Không thể tải ảnh đại diện: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(exception -> Toast.makeText(getContext(), "Failed to load avatar: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -126,9 +126,9 @@ public class AccountFragment extends Fragment {
         if (userId != null) {
             StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
             avatarRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-                Toast.makeText(getContext(), "Đã tải lên ảnh đại diện", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Avatar Image Uploaded", Toast.LENGTH_SHORT).show();
                 loadAvatarImage();
-            }).addOnFailureListener(e -> Toast.makeText(getContext(), "Tải lên ảnh đại diện thất bại", Toast.LENGTH_SHORT).show());
+            }).addOnFailureListener(e -> Toast.makeText(getContext(), "Avatar upload failed", Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -148,18 +148,17 @@ public class AccountFragment extends Fragment {
                         emailTextView.setText("Email: " + email);
                         phoneTextView.setText("Phone: " + (phone != null ? phone : ""));
                     } else {
-                        Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "User information not found", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(getContext(), "Lỗi khi đọc dữ liệu: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error reading data: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
-
     private String getUserId() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         return user != null ? user.getUid() : null;

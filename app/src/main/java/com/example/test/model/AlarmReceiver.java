@@ -45,20 +45,20 @@ public class AlarmReceiver extends BroadcastReceiver {
                     vibrator.vibrate(2000); // Dành cho các phiên bản Android cũ
                 }
             } else {
-                Toast.makeText(context, "Không có quyền rung. Vui lòng cấp quyền.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "No vibration permission. Please grant permission.", Toast.LENGTH_SHORT).show();
             }
         }
 
-        // Phát âm thanh báo thức
+        // Play the alarm sound
         playAlarmSound(context);
 
-        // Lấy ID báo thức từ intent
+        // Get the alarm ID from the intent
         String alarmId = intent.getStringExtra("alarmId");
 
-        // Lưu lịch sử báo thức vào Firebase
+        // Save alarm history to Firebase
         if (alarmId != null) {
             saveAlarmHistoryToFirebase(context, alarmId);
-            // Xóa báo thức sau khi kích hoạt
+            // Delete the alarm after triggering
             removeAlarmFromFirebase(context, alarmId);
         }
     }
@@ -66,16 +66,16 @@ public class AlarmReceiver extends BroadcastReceiver {
     private void saveAlarmHistoryToFirebase(Context context, String alarmId) {
         String uid = getUserUid(context);
         if (uid.equals("default_uid")) {
-            Toast.makeText(context, "UID không hợp lệ, không thể lưu lịch sử báo thức.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Invalid UID, cannot save alarm history.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         DatabaseReference database = FirebaseDatabase.getInstance().getReference();
         String timestamp = String.valueOf(System.currentTimeMillis());
         database.child("users").child(uid).child("reminder_history").child(alarmId).setValue(timestamp)
-                .addOnSuccessListener(aVoid -> Log.d("AlarmReceiver", "Lịch sử báo thức đã được lưu."))
+                .addOnSuccessListener(aVoid -> Log.d("AlarmReceiver", "Alarm history has been saved."))
                 .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Lỗi khi lưu lịch sử báo thức: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Error saving alarm history: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -88,13 +88,13 @@ public class AlarmReceiver extends BroadcastReceiver {
             database.child("users").child(uid).child("alarmHistory").child(alarmId)
                     .removeValue()
                     .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(context, "Báo thức đã được xóa sau khi kích hoạt.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "The alarm was cleared after activation.", Toast.LENGTH_SHORT).show();
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(context, "Lỗi khi xóa báo thức sau khi kích hoạt: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Error clearing alarm after triggering: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         } else {
-            Log.e("AlarmReceiver", "UID không hợp lệ, không thể xóa báo thức.");
+            Log.e("AlarmReceiver", "Invalid UID, cannot delete alarm.");
         }
     }
 
@@ -115,9 +115,9 @@ public class AlarmReceiver extends BroadcastReceiver {
     }
 
     private void sendNotification(Context context) {
-        // Kiểm tra quyền gửi thông báo
+        // Check permission to send notifications
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(context, "Không có quyền gửi thông báo. Vui lòng cấp quyền.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No permission to send notifications. Please grant permission.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -132,17 +132,16 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification) // Thay bằng icon của bạn
-                .setContentTitle("Nhắc nhở uống nước")
-                .setContentText("Đến giờ uống nước rồi!")
-                .setSound(soundUri) // Sử dụng âm thanh đã chọn
+                .setSmallIcon(R.drawable.ic_notification) // Replace with your icon
+                .setContentTitle("Reminder to drink water")
+                .setContentText("It's time for a drink!")
+                .setSound(soundUri) // Use the selected sound
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(1, builder.build());
     }
-
 
     private void playAlarmSound(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);

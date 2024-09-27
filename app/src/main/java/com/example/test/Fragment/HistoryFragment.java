@@ -85,8 +85,7 @@ public class HistoryFragment extends Fragment {
 
         List<Integer> hydrationData = new ArrayList<>();
         List<String> labels = new ArrayList<>();
-        String[] weekDays = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"};
-
+        String[] weekDays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         for (int i = 0; i < 7; i++) {
             hydrationData.add(0);
             labels.add(weekDays[i]); // Sử dụng danh sách các ngày trong tuần

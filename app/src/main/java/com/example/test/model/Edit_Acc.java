@@ -73,13 +73,13 @@ public class Edit_Acc extends AppCompatActivity {
                         editEmail.setText(originalEmail);
                         editPhone.setText(originalPhone != null ? originalPhone : "");
                     } else {
-                        Toast.makeText(Edit_Acc.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Edit_Acc.this, "User information not found", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(Edit_Acc.this, "Lỗi khi đọc dữ liệu: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Edit_Acc.this, "Error reading data: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -88,33 +88,33 @@ public class Edit_Acc extends AppCompatActivity {
     private void showExitConfirmationDialog() {
         if (hasChanges()) {
             new AlertDialog.Builder(this)
-                    .setTitle("Thoát mà chưa lưu")
-                    .setMessage("Bạn có muốn lưu thay đổi trước khi thoát không?")
-                    .setPositiveButton("Có", (dialog, which) -> {
+                    .setTitle("Exited without saving")
+                    .setMessage("Do you want to save changes before exiting?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
                         saveChanges();
                     })
-                    .setNegativeButton("Không", (dialog, which) -> {
-                        finish(); // Đóng activity mà không lưu
+                    .setNegativeButton("No", (dialog, which) -> {
+                        finish(); // Close the activity without saving
                     })
-                    .setNeutralButton("Hủy", null)
+                    .setNeutralButton("Cancel", null)
                     .show();
         } else {
-            finish(); // Không có thay đổi, thoát luôn
+            finish(); // No changes, exit
         }
     }
 
     private void showSaveConfirmationDialog() {
         if (hasChanges()) {
             new AlertDialog.Builder(this)
-                    .setTitle("Xác nhận lưu")
-                    .setMessage("Bạn có chắc chắn muốn lưu các thay đổi này không?")
-                    .setPositiveButton("Lưu", (dialog, which) -> {
-                        saveChanges(); // Lưu thay đổi
+                    .setTitle("Confirm save")
+                    .setMessage("Are you sure you want to save these changes?")
+                    .setPositiveButton("Save", (dialog, which) -> {
+                        saveChanges(); // Save changes
                     })
-                    .setNegativeButton("Hủy", null)
+                    .setNegativeButton("Cancel", null)
                     .show();
         } else {
-            Toast.makeText(this, "Không có thay đổi nào để lưu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "There are no changes to save", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -133,11 +133,10 @@ public class Edit_Acc extends AppCompatActivity {
         databaseRef.child("email").setValue(email);
         databaseRef.child("phone").setValue(phone);
 
-        // Sau khi lưu thông tin thành công
-        Toast.makeText(this, "Thông tin tài khoản đã được cập nhật", Toast.LENGTH_SHORT).show();
-        setResult(RESULT_OK);  // Đánh dấu hoạt động thành công
-        finish();  // Đóng Activity
-
+        // After successfully saving information
+        Toast.makeText(this, "Account information has been updated", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);  // Mark successful operation
+        finish();  // Close Activity
     }
 
     private boolean hasChanges() {

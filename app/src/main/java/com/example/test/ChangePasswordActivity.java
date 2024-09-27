@@ -2,7 +2,10 @@ package com.example.test;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -19,6 +22,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private Button changePasswordButton;
     private TextView resultTextView;
     private FirebaseAuth mAuth;
+    private CheckBox showPasswordCheckbox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +39,28 @@ public class ChangePasswordActivity extends AppCompatActivity {
         changePasswordButton = findViewById(R.id.change_password_button);
         resultTextView = findViewById(R.id.change_password_result);
         ImageButton backButton = findViewById(R.id.button_back);
+        showPasswordCheckbox = findViewById(R.id.show_password_checkbox);
 
         // Back button functionality
         backButton.setOnClickListener(v -> finish());
 
         // Change password button functionality
         changePasswordButton.setOnClickListener(v -> changePassword());
+
+        // Show/hide password functionality
+        showPasswordCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Show passwords
+                oldPassEditText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                newPassEditText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                confirmPassEditText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            } else {
+                // Hide passwords
+                oldPassEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                newPassEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                confirmPassEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+        });
     }
 
     private void changePassword() {
@@ -49,12 +69,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
         String confirmPassword = confirmPassEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(oldPassword) || TextUtils.isEmpty(newPassword) || TextUtils.isEmpty(confirmPassword)) {
-            Toast.makeText(ChangePasswordActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ChangePasswordActivity.this, "Please enter complete information", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!newPassword.equals(confirmPassword)) {
-            resultTextView.setText("Mật khẩu mới và mật khẩu xác nhận không khớp.");
+            resultTextView.setText("New password and confirmation password do not match.");
             return;
         }
 
@@ -66,18 +86,19 @@ public class ChangePasswordActivity extends AppCompatActivity {
                     // Change the user's password
                     user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
                         if (updateTask.isSuccessful()) {
-                            resultTextView.setText("Đổi mật khẩu thành công!");
-                            resultTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                            resultTextView.setText("Password changed successfully!");
+                            resultTextView.setTextColor(getResources().getColor(android.R.color.black));
+                            finish();
                         } else {
-                            resultTextView.setText("Đổi mật khẩu thất bại: " + updateTask.getException().getMessage());
+                            resultTextView.setText("Change password failed: " + updateTask.getException().getMessage());
                         }
                     });
                 } else {
-                    resultTextView.setText("Mật khẩu cũ không chính xác.");
+                    resultTextView.setText("Old password is incorrect.");
                 }
             });
         } else {
-            Toast.makeText(this, "Người dùng chưa đăng nhập.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "User is not logged in.", Toast.LENGTH_SHORT).show();
         }
     }
 }

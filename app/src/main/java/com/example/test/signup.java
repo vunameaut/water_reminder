@@ -79,51 +79,50 @@ public class signup extends AppCompatActivity {
         String confirmPassword = confirmPasswordEditText.getText().toString().trim();
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(signup.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(signup.this, "Please enter complete information", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            Toast.makeText(signup.this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+            Toast.makeText(signup.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Hiển thị hộp thoại chờ
+        // Display waiting dialog box
         ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Đang đăng ký...");
+        progressDialog.setMessage("Registering...");
         progressDialog.show();
 
-        // Đăng ký người dùng với email và mật khẩu
+        // Register user with email and password
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     progressDialog.dismiss();
                     if (task.isSuccessful()) {
-                        // Đăng ký thành công, lưu thông tin người dùng vào Realtime Database
+                        // Register successfully, save user information to Realtime Database
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
                             User userProfile = new User(user.getUid(), username, email,"");
                             mDatabase.child("users").child(user.getUid()).setValue(userProfile)
                                     .addOnCompleteListener(databaseTask -> {
                                         if (databaseTask.isSuccessful()) {
-                                            // Gửi email xác thực
+                                            // Send authentication email
                                             user.sendEmailVerification().addOnCompleteListener(verificationTask -> {
                                                 if (verificationTask.isSuccessful()) {
-                                                    Toast.makeText(signup.this, "Đăng ký thành công! Vui lòng xác thực email trước khi đăng nhập.", Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(signup.this, "Signup successful! Please verify email before logging in.", Toast.LENGTH_LONG).show();
                                                     Intent intent = new Intent(signup.this, login.class);
                                                     startActivity(intent);
                                                     finish();
                                                 } else {
-                                                    Toast.makeText(signup.this, "Không thể gửi email xác thực: " + verificationTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(signup.this, "Unable to send authentication email: " + verificationTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                         } else {
-                                            Toast.makeText(signup.this, "Lưu thông tin người dùng thất bại: " + databaseTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(signup.this, "Failed to save user information: " + databaseTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         }
                     } else {
-                        // Nếu đăng ký thất bại, hiển thị thông báo lỗi
-                        Toast.makeText(signup.this, "Đăng ký thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        // If registration fails, display an error message
+                        Toast.makeText(signup.this, "Signup failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

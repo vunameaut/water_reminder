@@ -46,10 +46,16 @@ public class login extends AppCompatActivity {
         // Check if the UID is already remembered
         String savedUID = sharedPreferences.getString("uid", null);
         if (savedUID != null) {
-            // UID found, auto-login
-            Intent intent = new Intent(login.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            FirebaseUser user = mAuth.getCurrentUser();
+            if (user != null && savedUID.equals(user.getUid())) {
+                // UID found, verify if session is still valid
+                checkSessionValidity(user);
+            } else {
+                // If user is null or UID doesn't match, clear stored UID
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove("uid");
+                editor.apply();
+            }
         }
 
         // Toggle password visibility
@@ -82,46 +88,67 @@ public class login extends AppCompatActivity {
         // Login button event
         loginButton.setOnClickListener(v -> loginUser());
     }
+    private void checkSessionValidity(FirebaseUser user) {
+        user.getIdToken(true).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Token hợp lệ, tiếp tục cho phép người dùng truy cập vào MainActivity
+                Intent intent = new Intent(login.this, MainActivity.class);
+                intent.putExtra("uid", user.getUid());
+                startActivity(intent);
+                finish();
+            } else {
+                // Token không hợp lệ (do mật khẩu thay đổi hoặc phiên hết hạn)
+                FirebaseAuth.getInstance().signOut();
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove("uid");  // Xóa UID lưu trữ
+                editor.apply();
+
+                Toast.makeText(login.this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
+                // Chuyển hướng người dùng về màn hình đăng nhập
+            }
+        });
+    }
+
     private void loginUser() {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(login.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(login.this, "Please enter complete information", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Show loading dialog
         ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Đang đăng nhập...");
+        progressDialog.setMessage("Signing in...");
         progressDialog.show();
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     progressDialog.dismiss();
                     if (task.isSuccessful()) {
-                        // Đăng nhập thành công
+                        // Log in successfully
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            Toast.makeText(login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(login.this, "Successful login!", Toast.LENGTH_SHORT).show();
 
-                            String uid = user.getUid(); // Lấy UID từ Firebase
+                            String uid = user.getUid(); // Get UID from Firebase
 
-                            // Lưu UID sau khi đăng nhập thành công vào SharedPreferences
+                            // Save UID after successful login to SharedPreferences
                             SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString("uid", uid);  // Luôn lưu UID
-                            editor.putBoolean("remember", rememberMeCheckBox.isChecked());  // Lưu trạng thái "Remember Me"
+                            editor.putString("uid", uid);  // Always save UID
+                            editor.putBoolean("remember", rememberMeCheckBox.isChecked());  // Save status "Remember Me"
                             editor.apply();
 
-                            // Chuyển UID qua MainActivity qua Intent (Optional)
+                            // Pass UID to MainActivity via Intent (Optional)
                             Intent intent = new Intent(login.this, MainActivity.class);
-                            intent.putExtra("uid", uid);  // Truyền UID qua Intent
+                            intent.putExtra("uid", uid);  // Pass UID via Intent
                             startActivity(intent);
                             finish();
                         }
                     } else {
-                        // Đăng nhập thất bại
-                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
+                        // Login failed
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Login failed";
                         Toast.makeText(login.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });

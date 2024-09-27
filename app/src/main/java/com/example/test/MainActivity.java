@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "CHANNEL_ID")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("Welcome")
-                .setContentText("Welcome to the app!")
+                .setContentText("Welcome to the Reminder Water!")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         notificationManager.notify(1, builder.build());

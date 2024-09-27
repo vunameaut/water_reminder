@@ -41,26 +41,25 @@ public class SoundNotificationsActivity extends AppCompatActivity {
         ringtoneUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION);
         updateRingtoneTextView(ringtoneUri);
 
-        // Sự kiện khi người dùng muốn thay đổi nhạc chuông
+        // Event when the user wants to change the ringtone
         changeRingtoneButton.setOnClickListener(v -> {
-            // Mở trình chọn nhạc chuông
+            // Open the ringtone chooser
             Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
-            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Chọn nhạc chuông thông báo");
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select notification ringtone");
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, ringtoneUri);
             startActivityForResult(intent, RINGTONE_PICKER_REQUEST_CODE);
         });
 
-        // Sự kiện khi bật hoặc tắt âm thanh thông báo
+        // Event when notification sound is turned on or off
         soundSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Toast.makeText(SoundNotificationsActivity.this, "Âm thanh thông báo đã bật", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SoundNotificationsActivity.this, "Notification sounds enabled", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(SoundNotificationsActivity.this, "Âm thanh thông báo đã tắt", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SoundNotificationsActivity.this, "Notification sounds turned off", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -81,7 +80,7 @@ public class SoundNotificationsActivity extends AppCompatActivity {
     private void updateRingtoneTextView(Uri ringtoneUri) {
         Ringtone ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
         String ringtoneTitle = ringtone.getTitle(this);
-        ringtoneTextView.setText("Nhạc chuông hiện tại: " + ringtoneTitle);
+        ringtoneTextView.setText("Current ringtone: " + ringtoneTitle);
     }
 
     // Lưu URI của nhạc chuông đã chọn vào SharedPreferences
