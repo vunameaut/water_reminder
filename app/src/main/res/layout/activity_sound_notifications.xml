@@ -27,7 +27,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Cài đặt âm thanh thông báo"
+            android:text="Set notification sound"
             android:textSize="18sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -44,7 +44,7 @@
         android:layout_gravity="center_horizontal"
         android:checked="true"
         android:paddingBottom="24dp"
-        android:text="Bật âm thanh thông báo"
+        android:text="Turn on notification sounds"
         android:gravity="center"
         tools:ignore="HardcodedText,UseSwitchCompatOrMaterialXml" />
 
@@ -53,7 +53,7 @@
         android:id="@+id/ringtone_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nhạc chuông hiện tại"
+        android:text="Current ringtones"
         android:textSize="16sp"
         android:paddingBottom="16dp" />
 
@@ -61,7 +61,7 @@
         android:id="@+id/change_ringtone_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Thay đổi nhạc chuông"
+        android:text="Change notification sound"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="24dp" />
 
